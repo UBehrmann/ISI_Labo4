@@ -8,3 +8,15 @@ add_executable(RC4
         RC4_1/laboCryptoUtils.h
         RC4_1/laboCryptoUtils.cpp
 )
+
+add_executable(RC4_2
+        RC4_2/part2.cpp
+        RC4_2/laboCryptoUtils.h
+        RC4_2/laboCryptoUtils.cpp
+)
+
+add_executable(AES
+        AES/part3.cpp
+        AES/aes.h
+        AES/aes.cpp
+)

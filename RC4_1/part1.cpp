@@ -1,4 +1,5 @@
-/* 
+
+/*
  * File:   part1.cpp
  * Author: patrick.mast
  *
