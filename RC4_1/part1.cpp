@@ -20,10 +20,10 @@ int main(int argc, char** argv) {
     /* Compléter les parties marquées <TODO>. Il peut manquer une ou plusieurs instructions à chaque fois */
 
     // Noms des fichiers
-    const char* file1Plain    = "src/part1_01.bmp";
-	const char* file1Rc4      = "src/part1_01_rc4.bmp";
-	const char* file2Rc4      = "src/part1_02_rc4.bmp";
-    const char* file2Plain    = "src/part1_02.bmp";
+    const char* file1Plain    = "RC4_1/part1_01.bmp";
+	const char* file1Rc4      = "RC4_1/part1_01_rc4.bmp";
+	const char* file2Rc4      = "RC4_1/part1_02_rc4.bmp";
+    const char* file2Plain    = "RC4_1/part1_02.bmp";
 
     // Lecture des tailles des images
     long sizeFile1 = readImageSize(file1Plain);
@@ -53,7 +53,9 @@ int main(int argc, char** argv) {
     // Création du contenu en effectuant un XOR avec le keystream
 	for(long i = HEADERS_SIZE; i < contentSize; i++){
 
-		image2Plain[i] = (char)( (image1Plain[i] ^ image1Rc4[i]) ^ image2Rc4[i] ) ;
+        char keystream = (char)(image1Plain[i] ^ image1Rc4[i]);
+
+		image2Plain[i] = (char)( keystream ^ image2Rc4[i] ) ;
 	}
 
 	// Création de l'image résultat
