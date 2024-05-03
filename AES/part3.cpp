@@ -33,7 +33,38 @@ int main(int argc, char** argv) {
 
     // Code à compléter !
 
-    return 0;
+    // Clefs a tester
+    unsigned keys = 0xff * 0xff * 0xff;
+
+    for(unsigned i = 0; i < keys; i++) {
+        key[13] = i & 0xff;
+        key[14] = (i >> 8) & 0xff;
+        key[15] = (i >> 16) & 0xff;
+
+        aes128_dks(ks_d, key);
+        aes128_decrypt(result, aes, ks_d);
+
+        if(result[0] == 'j' && result[1] == ' ' && result[2] == 'a' && result[3] == 'i') {
+
+            cout << "Key found: ";
+
+            for(unsigned char j : key) {
+                cout << hex << (int)j << " ";
+            }
+
+            cout << endl;
+
+            cout << "Decrypted message: ";
+
+            for(unsigned char j : result) {
+                cout << j;
+            }
+
+            cout << endl << endl;
+        }
+    }
+
+    return EXIT_SUCCESS;
 }
 
 
