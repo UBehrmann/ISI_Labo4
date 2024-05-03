@@ -5,12 +5,23 @@ from isi_labo4_functions import *
 # KEYS
 print("Generate private keys for Alice, Bob and Charlie")
 # TODO : Generate the private keys for Alice, Bob and Charlie
-save_privkey("./output/alice/privkey.pem", privkey_alice)
-save_privkey("./output/bob/privkey.pem", privkey_bob)
-save_privkey("./output/charlie/privkey.pem", privkey_charlie)
+
+privkey_alice = gen_privkey()
+privkey_bob = gen_privkey()
+privkey_charlie = gen_privkey()
+
+save_privkey("./applied-crypto/output/alice/privkey.pem", privkey_alice)
+save_privkey("./applied-crypto/output/bob/privkey.pem", privkey_bob)
+save_privkey("./applied-crypto/output/charlie/privkey.pem", privkey_charlie)
 
 ############################################
 # CERTIFICATES
+
+# Create certificate for Alice, Bob and Charlie
+
+identity_alice = create_identity("Alice")
+identity_bob = create_identity("Bob")
+identity_charlie = create_identity("Charlie")
 
 ############################################
 # Root certificate
@@ -20,7 +31,13 @@ save_privkey("./output/charlie/privkey.pem", privkey_charlie)
 print("Charlie creates a root certificate for his own CA")
 # Certificate must be valid for 10 years
 # TODO : Create a self-signed certificate for Charlie
-save_cert("./output/charlie/cert.pem", cert_charlie)
+
+# Date + 10 years
+ten_years = datetime.datetime.now() + datetime.timedelta(days=3650)
+
+cert_charlie = create_root_certificate(privkey_charlie, ten_years, identity_charlie)
+
+save_cert("./applied-crypto/output/charlie/cert.pem", cert_charlie)
 
 
 ############################################
@@ -29,11 +46,17 @@ save_cert("./output/charlie/cert.pem", cert_charlie)
 print("Alice and Bob create their Certificate Signing Request")
 # Alice
 # TODO : Create a CSR for Alice
-save_csr("./output/alice/cert.csr", csr_alice)
+
+csr_alice = create_server_csr(privkey_alice, identity_alice)
+
+save_csr("./applied-crypto/output/alice/cert.csr", csr_alice)
 
 # Bob
 # TODO : Create a CSR for Bob
-save_csr("./output/bob/cert.csr", csr_bob)
+
+csr_bob = create_server_csr(privkey_bob, identity_bob)
+
+save_csr("./applied-crypto/output/bob/cert.csr", csr_bob)
 
 
 ############################################
@@ -45,8 +68,13 @@ print("Charlie signs the CSR")
 # TODO : Sign the CSRs or Alice and Bob with the certificate of Charlie as root
 # TODO : they must be valid for 3 months
 
-save_cert("./output/alice/cert.pem", cert_alice)
-save_cert("./output/bob/cert.pem", cert_bob)
+tree_months = datetime.datetime.now() + datetime.timedelta(days=90)
+
+cert_alice = sign_csr(csr_alice, tree_months, cert_charlie, privkey_charlie)
+cert_bob = sign_csr(csr_bob, tree_months, cert_charlie, privkey_charlie)
+
+save_cert("./applied-crypto/output/alice/cert.pem", cert_alice)
+save_cert("./applied-crypto/output/bob/cert.pem", cert_bob)
 
 # Verify certificates
 print("We stop there in case a certificate is not valid")
@@ -60,14 +88,15 @@ assert verify_cert(cert_charlie, cert_bob, "Bob"), "Bob's certificate is invalid
 # Alice writes a text message and signs it with her private key
 print("Alice signs a text message with her private key")
 # TODO : Sign a message with Alice's private key
-# msg = ...
-# signature = ...
+msg = "Hello Bob, this is Alice"
+msg = msg.encode('utf-8')  # Convert the message to bytes
+signature = sign(privkey_alice, msg)
 
 # Verify Alice's signature (using assert)
 assert verify_cert(cert_charlie, cert_alice, "Alice"), "Alice's certificate is invalid !"
 assert verify_signature(cert_alice, signature, msg), "Signature is invalid !"
 
-save_signature("./output/alice/signature.txt", msg, signature)
+save_signature("./applied-crypto/output/alice/signature.txt", msg, signature)
 
 
 ############################################
@@ -76,22 +105,24 @@ save_signature("./output/alice/signature.txt", msg, signature)
 print("Alice writes an encrypted message for Bob")
 
 # TODO : Encrypt a message with a symmetric key
-# msg = ...
-# key = ...
-# cipher = ...
-# TODO : Wrap the key with Bob's public key
-# boxed_key = ...
+msg = "Hello Bob, this is Alice"
+msg = msg.encode('utf-8')  # Convert the message to bytes
+key = gen_sym_key()
+cipher = encrypt(key, msg)
 
-save_hybrid_encryption("./output/bob/hybrid_encryption.txt", boxed_key, cipher)
+# TODO : Wrap the key with Bob's public key
+boxed_key = wrap_key(get_pubkey(privkey_bob), key)
+
+save_hybrid_encryption("./applied-crypto/output/bob/hybrid_encryption.txt", boxed_key, cipher)
 
 # Here, Alice sends boxed_key and cipher to Bob through the network
 
 # Bob's side
 print("Bob decrypts the data")
 # TODO : Unwrap the key
-# unboxed_key = ...
+unboxed_key = unwrap_key(privkey_bob, boxed_key)
 assert unboxed_key == key, "Unwrapping of key failed"
 
 # TODO : Decrypt the message
-# plain_msg = ...
+plain_msg = decrypt(unboxed_key, cipher)
 assert plain_msg == msg, "Decryption of message failed"
